@@ -1,0 +1,22 @@
+# Node dependencies
+node_modules/
+
+# Environment/config files for credentials
+.env
+.env.local
+.env.*.local
+server/config.env
+
+# Build output
+build/
+dist/
+
+# OS/IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
