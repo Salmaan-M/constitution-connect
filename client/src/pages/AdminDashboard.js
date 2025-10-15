@@ -23,27 +23,50 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       
-      // Fetch statistics
-      const statsResponse = await scoresAPI.getStatistics();
-      
-      // Fetch recent blogs
-      const blogsResponse = await blogsAPI.getAll({ page: 1, limit: 5 });
-      
-      // Fetch recent contacts
-      const contactsResponse = await contactAPI.getAll({ page: 1, limit: 5 });
-      
-      // Fetch recent quizzes
-      const quizzesResponse = await quizzesAPI.getAll({ page: 1, limit: 5 });
+      // Fetch data in parallel with individual error handling
+      const [statsResponse, blogsResponse, contactsResponse, quizzesResponse] = await Promise.allSettled([
+        scoresAPI.getStatistics(),
+        blogsAPI.getAllAdmin({ page: 1, limit: 5 }),
+        contactAPI.getAll({ page: 1, limit: 5 }),
+        quizzesAPI.getAll({ page: 1, limit: 5 })
+      ]);
 
-      setStats({
-        totalUsers: statsResponse.statistics.totalUsers,
-        totalBlogs: blogsResponse.total,
-        totalQuizzes: statsResponse.statistics.totalQuizzes,
-        totalContacts: contactsResponse.total,
-        recentContacts: contactsResponse.contacts,
-        topQuizzes: statsResponse.statistics.quizzes.slice(0, 5),
-        recentBlogs: blogsResponse.blogs
-      });
+      // Handle statistics
+      let stats = {
+        totalUsers: 0,
+        totalBlogs: 0,
+        totalQuizzes: 0,
+        totalContacts: 0,
+        recentContacts: [],
+        topQuizzes: [],
+        recentBlogs: []
+      };
+
+      if (statsResponse.status === 'fulfilled') {
+        stats.totalUsers = statsResponse.value.statistics.totalUsers;
+        stats.totalQuizzes = statsResponse.value.statistics.totalQuizzes;
+        stats.topQuizzes = statsResponse.value.statistics.quizzes.slice(0, 5);
+      } else {
+        console.error('Failed to fetch statistics:', statsResponse.reason);
+      }
+
+      // Handle blogs
+      if (blogsResponse.status === 'fulfilled') {
+        stats.totalBlogs = blogsResponse.value.total;
+        stats.recentBlogs = blogsResponse.value.blogs;
+      } else {
+        console.error('Failed to fetch blogs:', blogsResponse.reason);
+      }
+
+      // Handle contacts
+      if (contactsResponse.status === 'fulfilled') {
+        stats.totalContacts = contactsResponse.value.total;
+        stats.recentContacts = contactsResponse.value.contacts;
+      } else {
+        console.error('Failed to fetch contacts:', contactsResponse.reason);
+      }
+
+      setStats(stats);
     } catch (error) {
       toast.error('Failed to load dashboard data');
       console.error('Error fetching dashboard data:', error);

@@ -140,7 +140,7 @@ router.get('/admin/statistics', adminAuth, async (req, res) => {
       'quizScores.0': { $exists: true }
     });
 
-    const totalQuizAttempts = quizzes.reduce((sum, quiz) => sum + quiz.attempts, 0);
+    const totalQuizAttempts = quizzes.reduce((sum, quiz) => sum + (quiz.attempts || 0), 0);
 
     res.json({
       success: true,
@@ -154,8 +154,8 @@ router.get('/admin/statistics', adminAuth, async (req, res) => {
           title: quiz.title,
           category: quiz.category,
           difficulty: quiz.difficulty,
-          attempts: quiz.attempts,
-          averageScore: quiz.averageScore,
+          attempts: quiz.attempts || 0,
+          averageScore: quiz.averageScore || 0,
           createdAt: quiz.createdAt
         }))
       }

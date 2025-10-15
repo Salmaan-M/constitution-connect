@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { blogsAPI } from '../services/api';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
 
 const Blogs = () => {
+  const { user } = useAuth();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -15,6 +17,7 @@ const Blogs = () => {
     currentPage: 1,
     total: 0
   });
+  const [likingBlogs, setLikingBlogs] = useState(new Set());
 
   const categories = [
     'all',
@@ -55,6 +58,35 @@ const Blogs = () => {
   const handlePageChange = (page) => {
     setFilters({ ...filters, page });
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLike = async (blogId) => {
+    if (!user) {
+      toast.error('Please login to like blogs');
+      return;
+    }
+
+    try {
+      setLikingBlogs(prev => new Set([...prev, blogId]));
+      const response = await blogsAPI.like(blogId);
+      
+      setBlogs(prev => prev.map(blog => 
+        blog._id === blogId 
+          ? { ...blog, likes: response.likes, isLiked: response.liked }
+          : blog
+      ));
+      
+      toast.success(response.message);
+    } catch (error) {
+      toast.error('Failed to like blog');
+      console.error('Error liking blog:', error);
+    } finally {
+      setLikingBlogs(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(blogId);
+        return newSet;
+      });
+    }
   };
 
   const formatDate = (dateString) => {
@@ -147,7 +179,16 @@ const Blogs = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center text-sm text-gray-500">
                     <span className="mr-4">👁️ {blog.views}</span>
-                    <span>❤️ {blog.likes}</span>
+                    <button
+                      onClick={() => handleLike(blog._id)}
+                      disabled={likingBlogs.has(blog._id)}
+                      className={`flex items-center space-x-1 mr-4 ${
+                        blog.isLiked ? 'text-red-500' : 'text-gray-500'
+                      } ${likingBlogs.has(blog._id) ? 'opacity-50 cursor-not-allowed' : 'hover:text-red-500'}`}
+                    >
+                      <span>{blog.isLiked ? '❤️' : '🤍'}</span>
+                      <span>{blog.likes}</span>
+                    </button>
                   </div>
                   <Link
                     to={`/blogs/${blog._id}`}

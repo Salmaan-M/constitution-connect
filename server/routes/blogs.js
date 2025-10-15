@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Blog = require('../models/Blog');
+const User = require('../models/User');
 const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -25,15 +26,73 @@ router.get('/', async (req, res) => {
 
     const total = await Blog.countDocuments(query);
 
+    // Add isLiked property for authenticated users
+    let blogsWithLikes = blogs.map(blog => {
+      const blogObj = blog.toObject();
+      blogObj.isLiked = false;
+      return blogObj;
+    });
+
+    // If user is authenticated, check their liked blogs
+    if (req.user) {
+      const user = await User.findById(req.user._id).select('likedBlogs');
+      if (user && user.likedBlogs) {
+        blogsWithLikes = blogsWithLikes.map(blog => ({
+          ...blog,
+          isLiked: user.likedBlogs.includes(blog._id)
+        }));
+      }
+    }
+
     res.json({
       success: true,
-      blogs,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
-      total
+      blogs: blogsWithLikes || [],
+      totalPages: Math.ceil(total / limit) || 1,
+      currentPage: parseInt(page) || 1,
+      total: total || 0
     });
   } catch (error) {
     console.error('Get blogs error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/blogs/admin
+// @desc    Get all blogs (including unpublished) for admin
+// @access  Private (Admin only)
+router.get('/admin', adminAuth, async (req, res) => {
+  try {
+    const { category, status, page = 1, limit = 10 } = req.query;
+    
+    let query = {};
+    if (category && category !== 'all') {
+      query.category = category;
+    }
+    if (status && status !== 'all') {
+      if (status === 'published') {
+        query.isPublished = true;
+      } else if (status === 'draft') {
+        query.isPublished = false;
+      }
+    }
+
+    const blogs = await Blog.find(query)
+      .populate('author', 'name')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Blog.countDocuments(query);
+
+    res.json({
+      success: true,
+      blogs: blogs || [],
+      totalPages: Math.ceil(total / limit) || 1,
+      currentPage: parseInt(page) || 1,
+      total: total || 0
+    });
+  } catch (error) {
+    console.error('Get admin blogs error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -54,9 +113,21 @@ router.get('/:id', async (req, res) => {
     blog.views += 1;
     await blog.save();
 
+    // Add isLiked property
+    let blogObj = blog.toObject();
+    blogObj.isLiked = false;
+
+    // If user is authenticated, check if they liked this blog
+    if (req.user) {
+      const user = await User.findById(req.user._id).select('likedBlogs');
+      if (user && user.likedBlogs) {
+        blogObj.isLiked = user.likedBlogs.includes(blog._id);
+      }
+    }
+
     res.json({
       success: true,
-      blog
+      blog: blogObj
     });
   } catch (error) {
     console.error('Get blog error:', error);
@@ -164,6 +235,55 @@ router.delete('/:id', adminAuth, async (req, res) => {
     });
   } catch (error) {
     console.error('Delete blog error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/blogs/:id/like
+// @desc    Like/unlike a blog
+// @access  Private
+router.post('/:id/like', auth, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog not found' });
+    }
+
+    // Check if user has already liked this blog
+    const user = await User.findById(req.user._id);
+    const likedIndex = user.likedBlogs.findIndex(
+      likedBlog => likedBlog.toString() === blog._id.toString()
+    );
+
+    if (likedIndex > -1) {
+      // Unlike: remove from user's liked blogs and decrement blog likes
+      user.likedBlogs.splice(likedIndex, 1);
+      blog.likes = Math.max(0, blog.likes - 1);
+      await user.save();
+      await blog.save();
+
+      res.json({
+        success: true,
+        liked: false,
+        likes: blog.likes,
+        message: 'Blog unliked successfully'
+      });
+    } else {
+      // Like: add to user's liked blogs and increment blog likes
+      user.likedBlogs.push(blog._id);
+      blog.likes += 1;
+      await user.save();
+      await blog.save();
+
+      res.json({
+        success: true,
+        liked: true,
+        likes: blog.likes,
+        message: 'Blog liked successfully'
+      });
+    }
+  } catch (error) {
+    console.error('Like blog error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

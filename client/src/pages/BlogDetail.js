@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { blogsAPI } from '../services/api';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
 
 const BlogDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [relatedBlogs, setRelatedBlogs] = useState([]);
+  const [isLiked, setIsLiked] = useState(false);
+  const [liking, setLiking] = useState(false);
 
   useEffect(() => {
     fetchBlog();
@@ -19,6 +23,11 @@ const BlogDetail = () => {
       setLoading(true);
       const response = await blogsAPI.getById(id);
       setBlog(response.blog);
+      
+      // Check if user has liked this blog
+      if (user && user.likedBlogs) {
+        setIsLiked(user.likedBlogs.includes(response.blog._id));
+      }
       
       // Fetch related blogs
       const relatedResponse = await blogsAPI.getAll({
@@ -33,6 +42,26 @@ const BlogDetail = () => {
       navigate('/blogs');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLike = async () => {
+    if (!user) {
+      toast.error('Please login to like blogs');
+      return;
+    }
+
+    try {
+      setLiking(true);
+      const response = await blogsAPI.like(id);
+      setIsLiked(response.liked);
+      setBlog(prev => ({ ...prev, likes: response.likes }));
+      toast.success(response.message);
+    } catch (error) {
+      toast.error('Failed to like blog');
+      console.error('Error liking blog:', error);
+    } finally {
+      setLiking(false);
     }
   };
 
@@ -104,6 +133,18 @@ const BlogDetail = () => {
               <span>•</span>
               <span>❤️ {blog.likes} likes</span>
             </div>
+            <button
+              onClick={handleLike}
+              disabled={liking}
+              className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                isLiked
+                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              } ${liking ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span>{isLiked ? '❤️' : '🤍'}</span>
+              <span>{isLiked ? 'Liked' : 'Like'}</span>
+            </button>
           </div>
         </div>
 

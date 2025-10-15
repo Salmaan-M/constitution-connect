@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { blogsAPI } from '../services/api';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
 
 const AdminBlogs = () => {
+  const { user, isAuthenticated } = useAuth();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -40,22 +42,34 @@ const AdminBlogs = () => {
   });
 
   useEffect(() => {
+    // Debug: Log user authentication status
+    console.log('AdminBlogs - User:', user);
+    console.log('AdminBlogs - Is Authenticated:', isAuthenticated);
+    console.log('AdminBlogs - User Role:', user?.role);
+    
     fetchBlogs();
   }, [filters]);
 
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const response = await blogsAPI.getAll(filters);
-      setBlogs(response.blogs);
+      const response = await blogsAPI.getAllAdmin(filters);
+      setBlogs(response.blogs || []);
       setPagination({
-        totalPages: response.totalPages,
-        currentPage: response.currentPage,
-        total: response.total
+        totalPages: response.totalPages || 1,
+        currentPage: response.currentPage || 1,
+        total: response.total || 0
       });
     } catch (error) {
       toast.error('Failed to load blogs');
       console.error('Error fetching blogs:', error);
+      // Set empty state on error
+      setBlogs([]);
+      setPagination({
+        totalPages: 1,
+        currentPage: 1,
+        total: 0
+      });
     } finally {
       setLoading(false);
     }
@@ -63,13 +77,23 @@ const AdminBlogs = () => {
 
   const handleCreateBlog = async (e) => {
     e.preventDefault();
+    
+    // Check if user is admin
+    if (!user || user.role !== 'admin') {
+      toast.error('You must be an admin to create blogs');
+      return;
+    }
+    
     try {
       const blogData = {
         ...formData,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       };
       
-      await blogsAPI.create(blogData);
+      // Debug: Log the data being sent
+      console.log('Creating blog with data:', blogData);
+      
+      const response = await blogsAPI.create(blogData);
       toast.success('Blog created successfully');
       setShowCreateForm(false);
       setFormData({
@@ -83,8 +107,12 @@ const AdminBlogs = () => {
       });
       fetchBlogs();
     } catch (error) {
-      toast.error('Failed to create blog');
       console.error('Error creating blog:', error);
+      if (error.message) {
+        toast.error(`Failed to create blog: ${error.message}`);
+      } else {
+        toast.error('Failed to create blog. Please check your input and try again.');
+      }
     }
   };
 

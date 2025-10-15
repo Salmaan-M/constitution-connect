@@ -47,6 +47,13 @@ const userSchema = new mongoose.Schema({
       default: Date.now
     }
   }],
+  likedBlogs: {
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Blog'
+    }],
+    default: []
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -121,7 +121,8 @@ router.get('/me', auth, async (req, res) => {
         name: req.user.name,
         email: req.user.email,
         role: req.user.role,
-        quizScores: req.user.quizScores
+        quizScores: req.user.quizScores,
+        likedBlogs: req.user.likedBlogs || []
       }
     });
   } catch (error) {

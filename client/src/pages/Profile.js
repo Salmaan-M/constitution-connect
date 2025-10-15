@@ -9,17 +9,20 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchUserScores();
-  }, []);
+    if (user) {
+      fetchUserScores();
+    }
+  }, [user]);
 
   const fetchUserScores = async () => {
     try {
       setLoading(true);
       const response = await scoresAPI.getUserScores();
-      setScores(response.scores);
+      setScores(response.scores || []);
     } catch (error) {
-      toast.error('Failed to load quiz scores');
       console.error('Error fetching scores:', error);
+      toast.error('Failed to load quiz scores');
+      setScores([]);
     } finally {
       setLoading(false);
     }
@@ -45,7 +48,7 @@ const Profile = () => {
     return 'bg-red-100 text-red-800';
   };
 
-  if (loading) {
+  if (loading || !user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center min-h-64">

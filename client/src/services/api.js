@@ -23,6 +23,11 @@ const apiRequest = async (endpoint, options = {}) => {
     const data = await response.json();
     
     if (!response.ok) {
+      // Handle validation errors
+      if (data.errors && Array.isArray(data.errors)) {
+        const errorMessages = data.errors.map(err => err.msg || err.message).join(', ');
+        throw new Error(errorMessages);
+      }
       throw new Error(data.message || 'Something went wrong');
     }
     
@@ -55,6 +60,11 @@ export const blogsAPI = {
     return apiRequest(`/blogs${queryString ? `?${queryString}` : ''}`);
   },
   
+  getAllAdmin: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/blogs/admin${queryString ? `?${queryString}` : ''}`);
+  },
+  
   getById: (id) => apiRequest(`/blogs/${id}`),
   
   create: (blogData) => apiRequest('/blogs', {
@@ -69,6 +79,10 @@ export const blogsAPI = {
   
   delete: (id) => apiRequest(`/blogs/${id}`, {
     method: 'DELETE',
+  }),
+  
+  like: (id) => apiRequest(`/blogs/${id}/like`, {
+    method: 'POST',
   }),
 };
 
@@ -134,7 +148,12 @@ export const scoresAPI = {
   getLeaderboard: (quizId, limit = 10) => apiRequest(`/scores/leaderboard/${quizId}?limit=${limit}`),
   
   getAllScores: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
+    // Remove quizId if it is 'all' before sending to backend
+    const filtered = { ...params };
+    if (filtered.quizId === 'all') {
+      delete filtered.quizId;
+    }
+    const queryString = new URLSearchParams(filtered).toString();
     return apiRequest(`/scores/admin/all${queryString ? `?${queryString}` : ''}`);
   },
   

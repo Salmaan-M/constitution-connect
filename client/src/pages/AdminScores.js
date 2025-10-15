@@ -35,22 +35,41 @@ const AdminScores = () => {
     try {
       setLoading(true);
       
-      // Fetch statistics
-      const statsResponse = await scoresAPI.getStatistics();
-      setStatistics(statsResponse.statistics);
-      
-      // Fetch quizzes for filter dropdown
-      const quizzesResponse = await quizzesAPI.getAll({ page: 1, limit: 100 });
-      setQuizzes(quizzesResponse.quizzes);
-      
-      // Fetch scores data
-      const scoresResponse = await scoresAPI.getAllScores(filters);
-      setScores(scoresResponse.users);
-      setPagination({
-        totalPages: scoresResponse.totalPages,
-        currentPage: scoresResponse.currentPage,
-        total: scoresResponse.total
-      });
+      // Fetch data in parallel with individual error handling
+      const [statsResponse, quizzesResponse, scoresResponse] = await Promise.allSettled([
+        scoresAPI.getStatistics(),
+        quizzesAPI.getAll({ page: 1, limit: 100 }),
+        scoresAPI.getAllScores(filters)
+      ]);
+
+      // Handle statistics
+      if (statsResponse.status === 'fulfilled') {
+        setStatistics(statsResponse.value.statistics);
+      } else {
+        console.error('Failed to fetch statistics:', statsResponse.reason);
+        toast.error('Failed to load statistics');
+      }
+
+      // Handle quizzes
+      if (quizzesResponse.status === 'fulfilled') {
+        setQuizzes(quizzesResponse.value.quizzes);
+      } else {
+        console.error('Failed to fetch quizzes:', quizzesResponse.reason);
+        toast.error('Failed to load quizzes');
+      }
+
+      // Handle scores
+      if (scoresResponse.status === 'fulfilled') {
+        setScores(scoresResponse.value.users);
+        setPagination({
+          totalPages: scoresResponse.value.totalPages,
+          currentPage: scoresResponse.value.currentPage,
+          total: scoresResponse.value.total
+        });
+      } else {
+        console.error('Failed to fetch scores:', scoresResponse.reason);
+        toast.error('Failed to load scores');
+      }
     } catch (error) {
       toast.error('Failed to load scores data');
       console.error('Error fetching scores data:', error);
