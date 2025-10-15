@@ -28,11 +28,13 @@ import AdminBlogs from './pages/AdminBlogs';
 import AdminQuizzes from './pages/AdminQuizzes';
 import AdminScores from './pages/AdminScores';
 import AdminContacts from './pages/AdminContacts';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop/>
         <div className="min-h-screen bg-gray-50 flex flex-col">
           <Navbar />
           <main className="flex-grow">
