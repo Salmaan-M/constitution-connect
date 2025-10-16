@@ -1,6 +1,14 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaFacebook, FaTwitter, FaLinkedin, FaInstagram, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  FaFacebook,
+  FaTwitter,
+  FaLinkedin,
+  FaInstagram,
+  FaEnvelope,
+  FaPhone,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
 
 const Footer = () => {
   return (
@@ -16,20 +24,45 @@ const Footer = () => {
               <span className="text-xl font-bold">Constitution Connect</span>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">
-              Empowering Indian citizens with constitutional literacy through interactive learning, 
-              comprehensive blogs, and engaging quizzes about our nation's fundamental principles.
+              Empowering Indian citizens with constitutional literacy through
+              interactive learning, comprehensive blogs, and engaging quizzes
+              about our nation's fundamental principles.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label="Facebook"
+              >
                 <FaFacebook className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label="Twitter"
+              >
                 <FaTwitter className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label="LinkedIn"
+              >
                 <FaLinkedin className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label="Instagram"
+              >
                 <FaInstagram className="w-5 h-5" />
               </a>
             </div>
@@ -40,27 +73,42 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-gray-300 hover:text-white transition-colors">
+                <Link
+                  to="/"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
                   Home
                 </Link>
               </li>
               <li>
-                <Link to="/blogs" className="text-gray-300 hover:text-white transition-colors">
+                <Link
+                  to="/blogs"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
                   Constitutional Blogs
                 </Link>
               </li>
               <li>
-                <Link to="/quizzes" className="text-gray-300 hover:text-white transition-colors">
+                <Link
+                  to="/quizzes"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
                   Interactive Quizzes
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-gray-300 hover:text-white transition-colors">
+                <Link
+                  to="/about"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
                   About Us
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-gray-300 hover:text-white transition-colors">
+                <Link
+                  to="/contact"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
                   Contact
                 </Link>
               </li>
@@ -73,7 +121,9 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <FaEnvelope className="w-4 h-4 text-primary-400" />
-                <span className="text-gray-300">info@constitutionconnect.in</span>
+                <span className="text-gray-300">
+                  info@constitutionconnect.in
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <FaPhone className="w-4 h-4 text-primary-400" />
@@ -82,7 +132,8 @@ const Footer = () => {
               <div className="flex items-start space-x-3">
                 <FaMapMarkerAlt className="w-4 h-4 text-primary-400 mt-1" />
                 <span className="text-gray-300">
-                  New Delhi, India<br />
+                  New Delhi, India
+                  <br />
                   Constitution Avenue
                 </span>
               </div>
@@ -96,10 +147,16 @@ const Footer = () => {
               © 2024 Constitution Connect. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link to="/" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link
+                to="/"
+                className="text-gray-400 hover:text-white text-sm transition-colors"
+              >
                 Privacy Policy
               </Link>
-              <Link to="/" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link
+                to="/"
+                className="text-gray-400 hover:text-white text-sm transition-colors"
+              >
                 Terms of Service
               </Link>
             </div>

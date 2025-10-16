@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { scoresAPI, blogsAPI, quizzesAPI, contactAPI } from '../services/api';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { scoresAPI, blogsAPI, quizzesAPI, contactAPI } from "../services/api";
+import { toast } from "react-toastify";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -11,26 +11,21 @@ const AdminDashboard = () => {
     totalContacts: 0,
     recentContacts: [],
     topQuizzes: [],
-    recentBlogs: []
+    recentBlogs: [],
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = React.useCallback(async () => {
     try {
       setLoading(true);
-      
       // Fetch data in parallel with individual error handling
-      const [statsResponse, blogsResponse, contactsResponse, quizzesResponse] = await Promise.allSettled([
-        scoresAPI.getStatistics(),
-        blogsAPI.getAllAdmin({ page: 1, limit: 5 }),
-        contactAPI.getAll({ page: 1, limit: 5 }),
-        quizzesAPI.getAll({ page: 1, limit: 5 })
-      ]);
-
+      const [statsResponse, blogsResponse, contactsResponse] =
+        await Promise.allSettled([
+          scoresAPI.getStatistics(),
+          blogsAPI.getAllAdmin({ page: 1, limit: 5 }),
+          contactAPI.getAll({ page: 1, limit: 5 }),
+          quizzesAPI.getAll({ page: 1, limit: 5 }),
+        ]);
       // Handle statistics
       let stats = {
         totalUsers: 0,
@@ -39,47 +34,47 @@ const AdminDashboard = () => {
         totalContacts: 0,
         recentContacts: [],
         topQuizzes: [],
-        recentBlogs: []
+        recentBlogs: [],
       };
-
-      if (statsResponse.status === 'fulfilled') {
+      if (statsResponse.status === "fulfilled") {
         stats.totalUsers = statsResponse.value.statistics.totalUsers;
         stats.totalQuizzes = statsResponse.value.statistics.totalQuizzes;
         stats.topQuizzes = statsResponse.value.statistics.quizzes.slice(0, 5);
       } else {
-        console.error('Failed to fetch statistics:', statsResponse.reason);
+        console.error("Failed to fetch statistics:", statsResponse.reason);
       }
-
       // Handle blogs
-      if (blogsResponse.status === 'fulfilled') {
+      if (blogsResponse.status === "fulfilled") {
         stats.totalBlogs = blogsResponse.value.total;
         stats.recentBlogs = blogsResponse.value.blogs;
       } else {
-        console.error('Failed to fetch blogs:', blogsResponse.reason);
+        console.error("Failed to fetch blogs:", blogsResponse.reason);
       }
-
       // Handle contacts
-      if (contactsResponse.status === 'fulfilled') {
+      if (contactsResponse.status === "fulfilled") {
         stats.totalContacts = contactsResponse.value.total;
         stats.recentContacts = contactsResponse.value.contacts;
       } else {
-        console.error('Failed to fetch contacts:', contactsResponse.reason);
+        console.error("Failed to fetch contacts:", contactsResponse.reason);
       }
-
       setStats(stats);
     } catch (error) {
-      toast.error('Failed to load dashboard data');
-      console.error('Error fetching dashboard data:', error);
+      toast.error("Failed to load dashboard data");
+      console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -96,8 +91,12 @@ const AdminDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
-        <p className="text-gray-600">Welcome to the Constitution Connect administration panel</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          Admin Dashboard
+        </h1>
+        <p className="text-gray-600">
+          Welcome to the Constitution Connect administration panel
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -111,7 +110,9 @@ const AdminDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.totalUsers}
+              </p>
             </div>
           </div>
         </div>
@@ -125,7 +126,9 @@ const AdminDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total Blogs</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalBlogs}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.totalBlogs}
+              </p>
             </div>
           </div>
         </div>
@@ -139,7 +142,9 @@ const AdminDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total Quizzes</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalQuizzes}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.totalQuizzes}
+              </p>
             </div>
           </div>
         </div>
@@ -152,8 +157,12 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Contacts</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalContacts}</p>
+              <p className="text-sm font-medium text-gray-500">
+                Total Contacts
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.totalContacts}
+              </p>
             </div>
           </div>
         </div>
@@ -161,7 +170,9 @@ const AdminDashboard = () => {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Quick Actions
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             to="/admin/blogs"
@@ -170,7 +181,9 @@ const AdminDashboard = () => {
             <span className="text-2xl mr-3">📝</span>
             <div>
               <div className="font-medium text-gray-800">Manage Blogs</div>
-              <div className="text-sm text-gray-500">Create and edit blog posts</div>
+              <div className="text-sm text-gray-500">
+                Create and edit blog posts
+              </div>
             </div>
           </Link>
 
@@ -181,7 +194,9 @@ const AdminDashboard = () => {
             <span className="text-2xl mr-3">🧠</span>
             <div>
               <div className="font-medium text-gray-800">Manage Quizzes</div>
-              <div className="text-sm text-gray-500">Create and edit quizzes</div>
+              <div className="text-sm text-gray-500">
+                Create and edit quizzes
+              </div>
             </div>
           </Link>
 
@@ -192,7 +207,9 @@ const AdminDashboard = () => {
             <span className="text-2xl mr-3">📊</span>
             <div>
               <div className="font-medium text-gray-800">View Scores</div>
-              <div className="text-sm text-gray-500">Monitor user performance</div>
+              <div className="text-sm text-gray-500">
+                Monitor user performance
+              </div>
             </div>
           </Link>
 
@@ -203,7 +220,9 @@ const AdminDashboard = () => {
             <span className="text-2xl mr-3">💬</span>
             <div>
               <div className="font-medium text-gray-800">Manage Contacts</div>
-              <div className="text-sm text-gray-500">View and respond to messages</div>
+              <div className="text-sm text-gray-500">
+                View and respond to messages
+              </div>
             </div>
           </Link>
         </div>
@@ -213,30 +232,45 @@ const AdminDashboard = () => {
         {/* Recent Contacts */}
         <div className="bg-white rounded-lg shadow-md">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800">Recent Contacts</h2>
+            <h2 className="text-xl font-semibold text-gray-800">
+              Recent Contacts
+            </h2>
           </div>
           <div className="divide-y divide-gray-200">
             {stats.recentContacts.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">No recent contacts</div>
+              <div className="p-6 text-center text-gray-500">
+                No recent contacts
+              </div>
             ) : (
               stats.recentContacts.map((contact) => (
                 <div key={contact._id} className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-800">{contact.name}</h3>
+                      <h3 className="text-sm font-medium text-gray-800">
+                        {contact.name}
+                      </h3>
                       <p className="text-sm text-gray-500">{contact.email}</p>
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">{contact.message}</p>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {contact.message}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        contact.status === 'new' ? 'bg-red-100 text-red-800' :
-                        contact.status === 'read' ? 'bg-yellow-100 text-yellow-800' :
-                        contact.status === 'replied' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          contact.status === "new"
+                            ? "bg-red-100 text-red-800"
+                            : contact.status === "read"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : contact.status === "replied"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
                         {contact.status}
                       </span>
-                      <p className="text-xs text-gray-500 mt-1">{formatDate(contact.createdAt)}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatDate(contact.createdAt)}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -256,22 +290,34 @@ const AdminDashboard = () => {
         {/* Top Quizzes */}
         <div className="bg-white rounded-lg shadow-md">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800">Quiz Performance</h2>
+            <h2 className="text-xl font-semibold text-gray-800">
+              Quiz Performance
+            </h2>
           </div>
           <div className="divide-y divide-gray-200">
             {stats.topQuizzes.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">No quiz data available</div>
+              <div className="p-6 text-center text-gray-500">
+                No quiz data available
+              </div>
             ) : (
               stats.topQuizzes.map((quiz) => (
                 <div key={quiz.id} className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-800">{quiz.title}</h3>
-                      <p className="text-sm text-gray-500">{quiz.category} • {quiz.difficulty}</p>
+                      <h3 className="text-sm font-medium text-gray-800">
+                        {quiz.title}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {quiz.category} • {quiz.difficulty}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium text-gray-800">{quiz.attempts} attempts</div>
-                      <div className="text-sm text-gray-500">Avg: {quiz.averageScore.toFixed(1)}%</div>
+                      <div className="text-sm font-medium text-gray-800">
+                        {quiz.attempts} attempts
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Avg: {quiz.averageScore.toFixed(1)}%
+                      </div>
                     </div>
                   </div>
                 </div>
