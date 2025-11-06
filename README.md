@@ -70,9 +70,3 @@ Constitution Connect is a MERN stack project designed to increase awareness and 
 - **Backend:** Node.js, Express
 - **Database:** MongoDB, Mongoose
 - **Others:** JWT authentication
-
-## Contributing
-Pull requests are welcome! For major changes, please open an issue to discuss what you would like to change. See [CONTRIBUTING.md](CONTRIBUTING.md) if available for more information.
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
